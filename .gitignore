@@ -1,0 +1,6 @@
+build/
+reports/
+__pycache__/
+*.dcu
+*.local
+*.identcache
