@@ -1,24 +1,26 @@
 # Delphi Seguro — laboratórios da primeira edição
 
-Exemplos de **Delphi Seguro: Do código ao deploy: segurança para aplicações empresariais**, de **Régys Borges da Silveira**. Licença Apache License 2.0; o livro e suas imagens não fazem parte desta licença. Referência da edição: tag `edicao-1-piloto-2026-10-23`.
+Exemplos de **Delphi Seguro: Do código ao deploy: segurança para aplicações empresariais**, de **Régys Borges da Silveira**. Licença Apache License 2.0; o livro e suas imagens não fazem parte desta licença. Referência da edição: tag `edicao-1-piloto-2026-10-23.1`.
 
 ## Ambiente e execução
 
-Delphi 13 Florence, compilador Win64 37.0, Windows e Python 3.11 ou posterior. A biblioteca padrão do Python atende ao servidor e aos testes. Não é necessário instalar pacotes Python. Os exemplos usam RTL, FireDAC e SQLite estático fornecidos pelo RAD Studio; sua instalação licenciada deve conter essas bibliotecas. O repositório distribui os nossos fontes, não o compilador nem suas bibliotecas.
+Delphi 13 Florence, compilador Win64 37.0, Windows e Python 3.11 ou posterior. A biblioteca padrão do Python atende ao servidor e aos testes. Não é necessário instalar pacotes Python para esses testes. A validação adicional do esquema SPDX usa um ambiente isolado com as dependências de `requirements-validation.txt`. Os exemplos usam RTL, FireDAC e SQLite estático fornecidos pelo RAD Studio; sua instalação licenciada deve conter essas bibliotecas. O repositório distribui os nossos fontes, não o compilador nem suas bibliotecas.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/test-delphi.ps1 -StudioRoot 'C:\Program Files (x86)\Embarcadero\Studio\37.0'
+python scripts/check-literal.py
 python -m unittest discover -s service -p 'test_*.py' -v
 python -m unittest discover -s scripts -p 'test_*.py' -v
 powershell -ExecutionPolicy Bypass -File scripts/test-update.ps1
 ```
 
-O primeiro comando compila cinco projetos e executa quatro. O teste `test_delphi_client` inicia um servidor temporário e executa o quinto, `HttpClientLab.exe`, contra ele. Sem o executável compilado, esse teste fica explicitamente ignorado; isso não conta como aceitação da integração. Os executáveis e relatórios são gerados em diretórios ignorados pelo Git.
+O primeiro comando compila seis projetos e executa cinco. O teste `test_delphi_client` inicia um servidor temporário e executa o sexto, `HttpClientLab.exe`, contra ele. Sem o executável compilado, esse teste fica explicitamente ignorado; isso não conta como aceitação da integração. Os executáveis e relatórios são gerados em diretórios ignorados pelo Git.
 
 ## Percurso e evidências
 
 | Laboratório | Capítulos | O que é executado |
 |---|---|---|
+| `ExposureLab.dpr` e `scripts/check-literal.py` | 3 | recuperação de literal fictício no binário, sem executar o arquivo |
 | `DpapiLab.dpr` e `SecureCompany.Secrets.pas` | 3–4 | proteção no usuário atual, persistência, recuperação e adulteração rejeitada |
 | `DataAccessLab.dpr` | 5 | SQLite em memória via FireDAC, parâmetros, apóstrofo, Unicode, entrada adversarial e rollback |
 | `CryptoLab.dpr` | 6 | aleatoriedade do Windows, HMAC-SHA256 e vetor público da RFC 4231 |
@@ -44,10 +46,12 @@ python scripts/release_inventory.py generate build/win64 reports/manifest.spdx.j
 python scripts/release_inventory.py validate build/win64 reports/manifest.spdx.json
 ```
 
+Para verificar também o esquema oficial SPDX, execute `python -m venv .venv`, `.venv/Scripts/python.exe -m pip install -r requirements-validation.txt` e `.venv/Scripts/python.exe scripts/validate_spdx_schema.py reports/manifest.spdx.json`. Essa etapa usa rede para obter o esquema oficial; o script informa seu SHA-256. O validador local de correspondência de arquivos e o validador de esquema atendem a critérios diferentes.
+
 `test-update.ps1` usa chaves RSA efêmeras apenas em memória e verifica os bytes antes de interpretar o JSON. Não instala certificados nem constitui um atualizador ou protocolo de produção. O teste do inventário simula a mudança de bytes entre candidato e final; não executa Authenticode. Assinar binários de produção exige identidade real de publicador, SignTool, cadeia, carimbo e verificação independente, como ensinam os capítulos 14–15.
 
 ## Critério de aceitação da edição
 
-Aceitar o incremento quando todos os projetos compilarem, os quatro testes de console concluírem, os sete testes do servidor passarem sem `skip`, os dois testes de inventário passarem e o teste de atualização concluir. O objetivo é produzir evidência pequena e repetível para cada controle; isto não certifica um ERP pronto para produção.
+Aceitar o incremento quando todos os projetos compilarem, os cinco programas locais concluírem, os sete testes do servidor passarem sem `skip`, os dois testes de inventário passarem e o teste de atualização concluir. O objetivo é produzir evidência pequena e repetível para cada controle; isto não certifica um ERP pronto para produção.
 
 As fontes oficiais das APIs e formatos e a interpretação de seus limites estão nas referências do livro. O código de criptografia usa implementações da RTL, Windows e .NET; não implementa primitivas próprias.

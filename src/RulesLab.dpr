@@ -37,7 +37,10 @@ begin
     Session.CanCancel := True;
     Session.ExpiresAt := CurrentTime;
     Check(not MayCancel(Session, Charge, CurrentTime), 'expiracao negada');
-    EventText := BillingLog('correlacao' + #13#10 + 'linha-falsa', 'denied');
+    EventText := BillingLog('''
+      correlacao
+      linha-falsa
+      ''', 'denied');
     Event := TJSONObject.ParseJSONValue(EventText);
     try
       Check(Assigned(Event), 'log permanece JSON valido');
